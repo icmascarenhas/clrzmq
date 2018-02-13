@@ -23,7 +23,7 @@
 
         public virtual bool Join(TimeSpan timeout)
         {
-            return Device.DoneEvent.WaitOne(timeout);
+            return Device.DoneEvent.WaitOne((int)timeout.TotalMilliseconds,false);
         }
     }
 }

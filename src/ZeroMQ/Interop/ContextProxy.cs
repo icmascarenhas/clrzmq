@@ -15,7 +15,14 @@
 
         public int Initialize()
         {
-            ContextHandle = LibZmq.zmq_ctx_new();
+            try
+            {
+                ContextHandle = LibZmq.zmq_ctx_new();
+            }
+            catch (Exception ex)
+            {
+                
+            }
 
             return ContextHandle == IntPtr.Zero ? -1 : 0;
         }

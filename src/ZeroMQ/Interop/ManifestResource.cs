@@ -30,7 +30,7 @@
             {
                 using (FileStream fileStream = File.Create(outputPath))
                 {
-                    resourceStream.CopyTo(fileStream);
+                    //resourceStream.CopyTo(fileStream);
                 }
             }
             catch (UnauthorizedAccessException)

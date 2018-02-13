@@ -2,6 +2,7 @@
 {
     using System;
     using System.Runtime.InteropServices;
+    using System.Text;
 
     internal class SocketProxy : IDisposable
     {
@@ -37,27 +38,27 @@
 
         public int Bind(string endpoint)
         {
-            return LibZmq.zmq_bind(SocketHandle, endpoint);
+            return LibZmq.zmq_bind(SocketHandle, Encoding.ASCII.GetBytes(endpoint));
         }
 
         public int Unbind(string endpoint)
         {
-            return LibZmq.zmq_unbind(SocketHandle, endpoint);
+            return LibZmq.zmq_unbind(SocketHandle, Encoding.ASCII.GetBytes(endpoint));
         }
 
         public int Connect(string endpoint)
         {
-            return LibZmq.zmq_connect(SocketHandle, endpoint);
+            return LibZmq.zmq_connect(SocketHandle, Encoding.ASCII.GetBytes(endpoint));
         }
 
         public int Disconnect(string endpoint)
         {
-            return LibZmq.zmq_disconnect(SocketHandle, endpoint);
+            return LibZmq.zmq_disconnect(SocketHandle, Encoding.ASCII.GetBytes(endpoint));
         }
 
         public int Monitor(string endpoint, int events)
         {
-            return LibZmq.zmq_socket_monitor(SocketHandle, endpoint, events);
+            return LibZmq.zmq_socket_monitor(SocketHandle, Encoding.ASCII.GetBytes(endpoint), events);
         }
 
         public int Close()
@@ -177,7 +178,7 @@
                 Marshal.Copy(buffer, 0, _msg.Data(), size);
             }
 
-            int bytesSent = Retry.IfInterrupted(LibZmq.zmq_msg_send.Invoke, _msg.Ptr, SocketHandle, flags);
+            int bytesSent = Retry.IfInterrupted(LibZmq.zmq_msg_send, _msg.Ptr, SocketHandle, flags);
 
             if (bytesSent == 0 && LibZmq.MajorVersion < 3)
             {
@@ -296,9 +297,7 @@
                 Marshal.WriteInt32(optionLength, MaxBinaryOptionSize);
 
                 int rc = RetryGetSocketOptionIfInterrupted(option, optionValue.Ptr, optionLength.Ptr);
-
-                value = rc == 0 ? Marshal.PtrToStringAnsi(optionValue) : string.Empty;
-
+                value = rc == 0 ? Marshal.PtrToStringUni(optionValue) : string.Empty;
                 return rc;
             }
         }
@@ -398,7 +397,7 @@
 #if UNIX
           return Retry.IfInterrupted(LibZmq.zmq_getsockopt, SocketHandle, option, optionValue, optionLength);
 #else
-          return Retry.IfInterrupted(LibZmq.zmq_getsockopt.Invoke, SocketHandle, option, optionValue, optionLength);
+          return Retry.IfInterrupted(LibZmq.zmq_getsockopt, SocketHandle, option, optionValue, optionLength);
 #endif
         }
 
@@ -407,7 +406,7 @@
 #if UNIX
           return Retry.IfInterrupted(LibZmq.zmq_setsockopt, SocketHandle, option, optionValue, optionLength);
 #else
-          return Retry.IfInterrupted(LibZmq.zmq_setsockopt.Invoke, SocketHandle, option, optionValue, optionLength);
+          return Retry.IfInterrupted(LibZmq.zmq_setsockopt, SocketHandle, option, optionValue, optionLength);
 #endif
         }
     }

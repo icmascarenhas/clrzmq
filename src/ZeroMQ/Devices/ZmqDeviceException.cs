@@ -45,15 +45,5 @@
             : base(errorDetails)
         {
         }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ZmqDeviceException"/> class.
-        /// </summary>
-        /// <param name="info"><see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context"><see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        protected ZmqDeviceException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

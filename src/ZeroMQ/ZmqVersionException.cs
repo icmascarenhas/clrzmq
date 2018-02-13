@@ -47,14 +47,5 @@
         {
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ZmqVersionException"/> class.
-        /// </summary>
-        /// <param name="info"><see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context"><see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        protected ZmqVersionException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
     }
 }

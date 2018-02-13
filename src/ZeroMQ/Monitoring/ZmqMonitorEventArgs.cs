@@ -1,6 +1,8 @@
 namespace ZeroMQ.Monitoring
 {
     using System;
+    using System.Text;
+    using System.Runtime.InteropServices;
 
     /// <summary>
     /// A base class for the all ZmqMonitor events.
@@ -15,7 +17,9 @@ namespace ZeroMQ.Monitoring
         public ZmqMonitorEventArgs(ZmqMonitor monitor, string address)
         {
             this.Monitor = monitor;
-            this.Address = address;
+            byte[] temp = Encoding.Unicode.GetBytes(address);
+            this.Address = Encoding.ASCII.GetString(temp, 0, temp.Length);               
+            
         }
 
         /// <summary>

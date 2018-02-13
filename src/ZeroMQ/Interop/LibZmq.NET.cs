@@ -14,22 +14,14 @@ namespace ZeroMQ.Interop
     [SuppressMessage("StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Reviewed. Suppression is OK here.")]
     internal static class LibZmq
     {
+#if WindowsCE
+        public const string LibraryName = "libzmqCE";
+#else
         public const string LibraryName = "libzmq";
+#endif
 
-        // From zmq.h (v3):
-        // typedef struct {unsigned char _ [32];} zmq_msg_t;
         private static readonly int Zmq3MsgTSize = 32 * Marshal.SizeOf(typeof(byte));
 
-        // From zmq.h (v2):
-        // #define ZMQ_MAX_VSM_SIZE 30
-        //
-        // typedef struct
-        // {
-        //     void *content;
-        //     unsigned char flags;
-        //     unsigned char vsm_size;
-        //     unsigned char vsm_data [ZMQ_MAX_VSM_SIZE];
-        // } zmq_msg_t;
         private static readonly int ZmqMaxVsmSize = 30 * Marshal.SizeOf(typeof(byte));
         private static readonly int Zmq2MsgTSize = IntPtr.Size + (Marshal.SizeOf(typeof(byte)) * 2) + ZmqMaxVsmSize;
 
@@ -39,78 +31,19 @@ namespace ZeroMQ.Interop
         public static readonly int MinorVersion;
         public static readonly int PatchVersion;
 
-        private static readonly UnmanagedLibrary NativeLib;
 
         public static readonly long PollTimeoutRatio;
 
         static LibZmq()
         {
-            NativeLib = new UnmanagedLibrary(LibraryName);
-
-            AssignCommonDelegates();
             AssignCurrentVersion(out MajorVersion, out MinorVersion, out PatchVersion);
+            ZmqMsgTSize = Zmq3MsgTSize;
 
-            if (MajorVersion >= 3)
-            {
-                zmq_msg_get = NativeLib.GetUnmanagedFunction<ZmqMsgGetProc>("zmq_msg_get");
-                zmq_msg_init_data = NativeLib.GetUnmanagedFunction<ZmqMsgInitDataProc>("zmq_msg_init_data");
-                zmq_msg_move = NativeLib.GetUnmanagedFunction<ZmqMsgMoveProc>("zmq_msg_move");
-
-                zmq_msg_recv = NativeLib.GetUnmanagedFunction<ZmqMsgRecvProc>("zmq_msg_recv");
-                zmq_msg_send = NativeLib.GetUnmanagedFunction<ZmqMsgSendProc>("zmq_msg_send");
-
-                zmq_buffer_recv = NativeLib.GetUnmanagedFunction<ZmqBufferRecvProc>("zmq_recv");
-                zmq_buffer_send = NativeLib.GetUnmanagedFunction<ZmqBufferSendProc>("zmq_send");
-
-                zmq_ctx_new = NativeLib.GetUnmanagedFunction<ZmqCtxNewProc>("zmq_ctx_new");
-                zmq_ctx_destroy = NativeLib.GetUnmanagedFunction<ZmqCtxDestroyProc>("zmq_ctx_destroy");
-                zmq_ctx_get = NativeLib.GetUnmanagedFunction<ZmqCtxGetProc>("zmq_ctx_get");
-                zmq_ctx_set = NativeLib.GetUnmanagedFunction<ZmqCtxSetProc>("zmq_ctx_set");
-                zmq_socket_monitor = NativeLib.GetUnmanagedFunction<ZmqSocketMonitorProc>("zmq_socket_monitor");
-
-                zmq_unbind = NativeLib.GetUnmanagedFunction<ZmqBindProc>("zmq_unbind");
-                zmq_disconnect = NativeLib.GetUnmanagedFunction<ZmqConnectProc>("zmq_disconnect");
-
-                PollTimeoutRatio = 1;
-                ZmqMsgTSize = Zmq3MsgTSize;
-            }
-            else if (MajorVersion == 2)
-            {
-                var zmq_msg_recv_impl = NativeLib.GetUnmanagedFunction<ZmqMsgRecvProc>("zmq_recv");
-                var zmq_msg_send_impl = NativeLib.GetUnmanagedFunction<ZmqMsgSendProc>("zmq_send");
-                zmq_msg_recv = (msg, sck, flags) => zmq_msg_recv_impl(sck, msg, flags);
-                zmq_msg_send = (msg, sck, flags) => zmq_msg_send_impl(sck, msg, flags);
-
-                zmq_buffer_recv = null;
-                zmq_buffer_send = null;
-
-                var zmq_init = NativeLib.GetUnmanagedFunction<ZmqInitProc>("zmq_init");
-                zmq_ctx_new = () => zmq_init(1);
-                zmq_ctx_destroy = NativeLib.GetUnmanagedFunction<ZmqCtxDestroyProc>("zmq_term");
-
-                PollTimeoutRatio = 1000;
-                ZmqMsgTSize = Zmq2MsgTSize;
-            }
         }
 
         private static void AssignCommonDelegates()
         {
-            zmq_close = NativeLib.GetUnmanagedFunction<ZmqCloseProc>("zmq_close");
-            zmq_setsockopt = NativeLib.GetUnmanagedFunction<ZmqSetSockOptProc>("zmq_setsockopt");
-            zmq_getsockopt = NativeLib.GetUnmanagedFunction<ZmqGetSockOptProc>("zmq_getsockopt");
-            zmq_bind = NativeLib.GetUnmanagedFunction<ZmqBindProc>("zmq_bind");
-            zmq_connect = NativeLib.GetUnmanagedFunction<ZmqConnectProc>("zmq_connect");
-            zmq_socket = NativeLib.GetUnmanagedFunction<ZmqSocketProc>("zmq_socket");
-            zmq_msg_close = NativeLib.GetUnmanagedFunction<ZmqMsgCloseProc>("zmq_msg_close");
-            zmq_msg_copy = NativeLib.GetUnmanagedFunction<ZmqMsgCopyProc>("zmq_msg_copy");
-            zmq_msg_data = NativeLib.GetUnmanagedFunction<ZmqMsgDataProc>("zmq_msg_data");
-            zmq_msg_init = NativeLib.GetUnmanagedFunction<ZmqMsgInitProc>("zmq_msg_init");
-            zmq_msg_init_size = NativeLib.GetUnmanagedFunction<ZmqMsgInitSizeProc>("zmq_msg_init_size");
-            zmq_msg_size = NativeLib.GetUnmanagedFunction<ZmqMsgSizeProc>("zmq_msg_size");
-            zmq_errno = NativeLib.GetUnmanagedFunction<ZmqErrnoProc>("zmq_errno");
-            zmq_strerror = NativeLib.GetUnmanagedFunction<ZmqStrErrorProc>("zmq_strerror");
-            zmq_version = NativeLib.GetUnmanagedFunction<ZmqVersionProc>("zmq_version");
-            zmq_poll = NativeLib.GetUnmanagedFunction<ZmqPollProc>("zmq_poll");
+          
         }
 
         private static void AssignCurrentVersion(out int majorVersion, out int minorVersion, out int patchVersion)
@@ -132,132 +65,109 @@ namespace ZeroMQ.Interop
             Marshal.FreeHGlobal(patchPointer);
         }
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void FreeMessageDataCallback(IntPtr data, IntPtr hint);
+        [DllImport(LibraryName)]
+        public static extern int zmq_close(IntPtr socket);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void MonitorFuncCallback(IntPtr socket, int eventFlags, ref MonitorEventData data);
+        [DllImport(LibraryName)]
+        public static extern int zmq_setsockopt(IntPtr socket, int option, IntPtr optval, int optvallen);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate IntPtr ZmqCtxNewProc();
-        public static ZmqCtxNewProc zmq_ctx_new;
+        [DllImport(LibraryName)]
+        public static extern int zmq_getsockopt(IntPtr socket, int option, IntPtr optval, IntPtr optvallen);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate IntPtr ZmqInitProc(int io_threads);
+        [DllImport(LibraryName)]
+        public static extern int zmq_bind(IntPtr socket, byte[] addr);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqCtxDestroyProc(IntPtr context);
-        public static ZmqCtxDestroyProc zmq_ctx_destroy;
+        [DllImport(LibraryName, CharSet = CharSet.Unicode)]
+        public static extern int zmq_connect(IntPtr socket,  byte[] addr);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqCtxGetProc(IntPtr context, int option);
-        public static ZmqCtxGetProc zmq_ctx_get;
+        [DllImport(LibraryName)]
+        public static extern IntPtr zmq_socket(IntPtr context, int type);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqCtxSetProc(IntPtr context, int option, int optval);
-        public static ZmqCtxSetProc zmq_ctx_set;
+        [DllImport(LibraryName)]
+        public static extern int zmq_msg_close(IntPtr msg);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqSocketMonitorProc(IntPtr socket, string addr, int events);
-        public static ZmqSocketMonitorProc zmq_socket_monitor;
+        [DllImport(LibraryName)]
+        public static extern int zmq_msg_copy(IntPtr destmsg, IntPtr srcmsg);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqSetSockOptProc(IntPtr socket, int option, IntPtr optval, int optvallen);
-        public static ZmqSetSockOptProc zmq_setsockopt;
+        [DllImport(LibraryName)]
+        public static extern IntPtr zmq_msg_data(IntPtr msg);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqGetSockOptProc(IntPtr socket, int option, IntPtr optval, IntPtr optvallen);
-        public static ZmqGetSockOptProc zmq_getsockopt;
+        [DllImport(LibraryName)]
+        public static extern int zmq_msg_init(IntPtr msg);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqMsgGetProc(IntPtr message, int option, IntPtr optval, IntPtr optvallen);
-        public static ZmqMsgGetProc zmq_msg_get;
+        [DllImport(LibraryName)]
+        public static extern int zmq_msg_init_size(IntPtr msg, int size);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public delegate int ZmqBindProc(IntPtr socket, string addr);
-        public static ZmqBindProc zmq_bind;
-        public static ZmqBindProc zmq_unbind;
+        [DllImport(LibraryName)]
+        public static extern int zmq_msg_size(IntPtr msg);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public delegate int ZmqConnectProc(IntPtr socket, string addr);
-        public static ZmqConnectProc zmq_connect;
-        public static ZmqConnectProc zmq_disconnect;
+        [DllImport(LibraryName)]
+        public static extern int zmq_errno();
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqCloseProc(IntPtr socket);
-        public static ZmqCloseProc zmq_close;
+        [DllImport(LibraryName)]
+        public static extern IntPtr zmq_strerror(int errnum);
 
-        // NOTE: For 2.x, this method signature is (socket, msg, flags)
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [DllImport(LibraryName)]
+        public static extern void zmq_version(IntPtr major, IntPtr minor, IntPtr patch);
+
+        [DllImport(LibraryName)]
+        public static extern int zmq_poll([In] [Out] PollItem[] items, int numItems, long timeoutMsec);
+
+        [DllImport(LibraryName)]
+        public static extern int zmq_msg_move(IntPtr destmsg, IntPtr srcmsg);
+
+        [DllImport(LibraryName, EntryPoint = "zmq_msg_send")]
+        public static extern Int32 zmq_msg_send(IntPtr msg, IntPtr socket, Int32 flags);
+        
+        [DllImport(LibraryName, EntryPoint = "zmq_msg_recv")]
+        public static extern int zmq_msg_recv_v3(IntPtr msg, IntPtr socket, int flags);
+
         public delegate int ZmqMsgRecvProc(IntPtr msg, IntPtr socket, int flags);
-        public static ZmqMsgRecvProc zmq_msg_recv;
+        public static ZmqMsgRecvProc zmq_msg_recv = zmq_msg_recv_v3;
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+
+
+        [DllImport(LibraryName, EntryPoint = "zmq_ctx_new")]
+        public static extern IntPtr zmq_ctx_new();
+
+        [DllImport(LibraryName)]
+        public static extern IntPtr zmq_init(int io_threads);
+
+        [DllImport(LibraryName, EntryPoint = "zmq_ctx_destroy")]
+        public static extern int zmq_ctx_destroy(IntPtr context);
+
+        [DllImport(LibraryName)]
+        public static extern int zmq_term(IntPtr context);
+
+        [DllImport(LibraryName, EntryPoint = "zmq_ctx_get")]
+        public static extern int zmq_ctx_get(IntPtr context, int option);
+
+        [DllImport(LibraryName, EntryPoint = "zmq_ctx_set")]
+        public static extern int zmq_ctx_set(IntPtr context, int option, int optval);
+
+        [DllImport(LibraryName, EntryPoint = "zmq_socket_monitor")]
+        public static extern int zmq_socket_monitor(IntPtr socket, byte[] addr, int events);
+
+        [DllImport(LibraryName, EntryPoint = "zmq_recv")]
+        public static extern int zmq_buffer_recv2(IntPtr socket, IntPtr buf, int size, int flags);
+
         public delegate int ZmqBufferRecvProc(IntPtr socket, IntPtr buf, int size, int flags);
-        public static ZmqBufferRecvProc zmq_buffer_recv;
+        public static ZmqBufferRecvProc zmq_buffer_recv = zmq_buffer_recv2;
 
-        // NOTE: For 2.x, this method signature is (socket, msg, flags)
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqMsgSendProc(IntPtr msg, IntPtr socket, int flags);
-        public static ZmqMsgSendProc zmq_msg_send;
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        [DllImport(LibraryName, EntryPoint = "zmq_send")]
+        public static extern int zmq_sendbuf_v3(IntPtr socket, IntPtr buf, int size, int flags);
+
         public delegate int ZmqBufferSendProc(IntPtr socket, IntPtr buf, int size, int flags);
-        public static ZmqBufferSendProc zmq_buffer_send;
+        public static ZmqBufferSendProc zmq_buffer_send = zmq_sendbuf_v3;
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate IntPtr ZmqSocketProc(IntPtr context, int type);
-        public static ZmqSocketProc zmq_socket;
+        [DllImport(LibraryName, EntryPoint = "zmq_unbind")]
+        public static extern Int32 zmq_unbind(IntPtr socket, byte[] addr);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqMsgCloseProc(IntPtr msg);
-        public static ZmqMsgCloseProc zmq_msg_close;
+        [DllImport(LibraryName, EntryPoint = "zmq_disconnect")]
+        public static extern Int32 zmq_disconnect(IntPtr socket, byte[] addr);
 
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqMsgCopyProc(IntPtr destmsg, IntPtr srcmsg);
-        public static ZmqMsgCopyProc zmq_msg_copy;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate IntPtr ZmqMsgDataProc(IntPtr msg);
-        public static ZmqMsgDataProc zmq_msg_data;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqMsgInitProc(IntPtr msg);
-        public static ZmqMsgInitProc zmq_msg_init;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqMsgInitSizeProc(IntPtr msg, int size);
-        public static ZmqMsgInitSizeProc zmq_msg_init_size;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqMsgInitDataProc(IntPtr msg, IntPtr data, int size, FreeMessageDataCallback ffn, IntPtr hint);
-        public static ZmqMsgInitDataProc zmq_msg_init_data;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqMsgMoveProc(IntPtr destmsg, IntPtr srcmsg);
-        public static ZmqMsgMoveProc zmq_msg_move;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqMsgSizeProc(IntPtr msg);
-        public static ZmqMsgSizeProc zmq_msg_size;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqErrnoProc();
-        public static ZmqErrnoProc zmq_errno;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public delegate IntPtr ZmqStrErrorProc(int errnum);
-        public static ZmqStrErrorProc zmq_strerror;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate void ZmqVersionProc(IntPtr major, IntPtr minor, IntPtr patch);
-        public static ZmqVersionProc zmq_version;
-
-        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-        public delegate int ZmqPollProc([In] [Out] PollItem[] items, int numItems, long timeoutMsec);
-        public static ZmqPollProc zmq_poll;
     }
-    // ReSharper restore InconsistentNaming
 }
 
 #endif

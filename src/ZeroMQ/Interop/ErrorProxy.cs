@@ -2,6 +2,7 @@
 {
     using System.Collections.Generic;
     using System.Runtime.InteropServices;
+    using System.Text;
 
     internal static class ErrorProxy
     {
@@ -36,8 +37,10 @@
                 return KnownErrors[errorCode];
             }
 
-            string message = Marshal.PtrToStringAnsi(LibZmq.zmq_strerror(errorCode));
+            string message = Marshal.PtrToStringUni(LibZmq.zmq_strerror(errorCode));
+            byte[] temp = Encoding.Unicode.GetBytes(message);
 
+            message = Encoding.ASCII.GetString(temp, 0, temp.Length).Replace('\0', ' ').Trim(); ;
             var errorDetails = new ErrorDetails(errorCode, message);
             KnownErrors[errorCode] = errorDetails;
 

@@ -2,7 +2,6 @@
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq.Expressions;
     using System.Reflection;
 
     /// <summary>
@@ -64,61 +63,7 @@
             return this;
         }
 
-        /// <summary>
-        /// Set an int-based socket option.
-        /// </summary>
-        /// <param name="property">The <see cref="ZmqSocket"/> property to set.</param>
-        /// <param name="value">The int value to assign.</param>
-        /// <returns>The current <see cref="DeviceSocketSetup"/> object.</returns>
-        public DeviceSocketSetup SetSocketOption(Expression<Func<ZmqSocket, int>> property, int value)
-        {
-            return SetSocketOption<int>(property, value);
-        }
-
-        /// <summary>
-        /// Set a long-based socket option.
-        /// </summary>
-        /// <param name="property">The <see cref="ZmqSocket"/> property to set.</param>
-        /// <param name="value">The long value to assign.</param>
-        /// <returns>The current <see cref="DeviceSocketSetup"/> object.</returns>
-        public DeviceSocketSetup SetSocketOption(Expression<Func<ZmqSocket, long>> property, long value)
-        {
-            return SetSocketOption<long>(property, value);
-        }
-
-        /// <summary>
-        /// Set a ulong-based socket option.
-        /// </summary>
-        /// <param name="property">The <see cref="ZmqSocket"/> property to set.</param>
-        /// <param name="value">The ulong value to assign.</param>
-        /// <returns>The current <see cref="DeviceSocketSetup"/> object.</returns>
-        public DeviceSocketSetup SetSocketOption(Expression<Func<ZmqSocket, ulong>> property, ulong value)
-        {
-            return SetSocketOption<ulong>(property, value);
-        }
-
-        /// <summary>
-        /// Set a byte array-based socket option.
-        /// </summary>
-        /// <param name="property">The <see cref="ZmqSocket"/> property to set.</param>
-        /// <param name="value">The byte array value to assign.</param>
-        /// <returns>The current <see cref="DeviceSocketSetup"/> object.</returns>
-        public DeviceSocketSetup SetSocketOption(Expression<Func<ZmqSocket, byte[]>> property, byte[] value)
-        {
-            return SetSocketOption<byte[]>(property, value);
-        }
-
-        /// <summary>
-        /// Set a <see cref="TimeSpan"/>-based socket option.
-        /// </summary>
-        /// <param name="property">The <see cref="ZmqSocket"/> property to set.</param>
-        /// <param name="value">The <see cref="TimeSpan"/> value to assign.</param>
-        /// <returns>The current <see cref="DeviceSocketSetup"/> object.</returns>
-        public DeviceSocketSetup SetSocketOption(Expression<Func<ZmqSocket, TimeSpan>> property, TimeSpan value)
-        {
-            return SetSocketOption<TimeSpan>(property, value);
-        }
-
+      
         /// <summary>
         /// Configure the socket to subscribe to a specific prefix. See <see cref="ZmqSocket.Subscribe"/> for details.
         /// </summary>
@@ -175,27 +120,5 @@
             _isConfigured = true;
         }
 
-        private DeviceSocketSetup SetSocketOption<T>(Expression<Func<ZmqSocket, T>> property, T value)
-        {
-            PropertyInfo propertyInfo;
-
-            if (property.Body is MemberExpression)
-            {
-                propertyInfo = ((MemberExpression)property.Body).Member as PropertyInfo;
-            }
-            else
-            {
-                propertyInfo = ((MemberExpression)((UnaryExpression)property.Body).Operand).Member as PropertyInfo;
-            }
-
-            if (propertyInfo == null)
-            {
-                throw new InvalidOperationException("The specified ZmqSocket member is not a property: " + property.Body);
-            }
-
-            _socketInitializers.Add(s => propertyInfo.SetValue(s, value, null));
-
-            return this;
-        }
     }
 }

@@ -141,7 +141,6 @@ namespace ZeroMQ.Monitoring
                 var pinnedBytes = GCHandle.Alloc(buffer, GCHandleType.Pinned);
                 var eventData = (MonitorEventData)Marshal.PtrToStructure(pinnedBytes.AddrOfPinnedObject(), typeof(MonitorEventData));
                 pinnedBytes.Free();
-
                 OnMonitor(ref eventData);
             }
 

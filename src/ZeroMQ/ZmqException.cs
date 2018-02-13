@@ -52,16 +52,6 @@
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ZmqException"/> class.
-        /// </summary>
-        /// <param name="info"><see cref="SerializationInfo"/> that holds the serialized object data about the exception being thrown.</param>
-        /// <param name="context"><see cref="StreamingContext"/> that contains contextual information about the source or destination.</param>
-        protected ZmqException(SerializationInfo info, StreamingContext context)
-            : base(info, context)
-        {
-        }
-
-        /// <summary>
         /// Gets the error code returned by the ZeroMQ library call.
         /// </summary>
         public int ErrorCode { get; private set; }
@@ -74,7 +64,7 @@
         private static string GetErrorName(int errorCode)
         {
             return ZeroMQ.ErrorCode.ErrorNames.ContainsKey(errorCode)
-                       ? ZeroMQ.ErrorCode.ErrorNames[errorCode]
+                       ? ZeroMQ.ErrorCode.ErrorNames[errorCode] + "Error Code" + errorCode
                        : "Error " + errorCode;
         }
     }

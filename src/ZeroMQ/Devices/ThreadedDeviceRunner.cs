@@ -25,7 +25,7 @@
 
         public override bool Join(TimeSpan timeout)
         {
-            return _runThread.Join(timeout);
+            return _runThread.Join((int)timeout.TotalMilliseconds);
         }
     }
 }

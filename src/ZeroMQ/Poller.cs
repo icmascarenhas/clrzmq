@@ -158,7 +158,7 @@
         {
             if (disposing)
             {
-                Pulse.Dispose();
+                Pulse.Close();
             }
         }
 
@@ -217,6 +217,7 @@
             if (_pollItems == null || _pollItems.Length != _pollableSockets.Count)
             {
                 _pollItems = _pollableSockets.Keys.ToArray();
+                
             }
         }
 
@@ -235,9 +236,10 @@
             {
                 foreach (PollItem pollItem in _pollItems.Where(item => item.ReadyEvents != (short)PollEvents.None))
                 {
-                    ZmqSocket socket = _pollableSockets[pollItem];
-
-                    socket.InvokePollEvents((PollEvents)pollItem.ReadyEvents);
+                    foreach (ZmqSocket smzo in _pollableSockets.Values.ToArray().Where(it => it.SocketHandle == pollItem.Socket))
+                    {
+                        smzo.InvokePollEvents((PollEvents)pollItem.ReadyEvents);
+                    }
                 }
             }
 

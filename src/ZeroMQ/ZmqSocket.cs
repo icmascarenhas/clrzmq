@@ -2,6 +2,9 @@
 {
     using System;
     using Interop;
+    using System.Threading;
+    using System.Diagnostics;
+    using System.Text;
 
     /// <summary>
     /// Sends and receives messages across various transports to potentially multiple endpoints
@@ -134,7 +137,7 @@
         /// <exception cref="ObjectDisposedException">The <see cref="ZmqSocket"/> has been closed.</exception>
         public int MulticastRate
         {
-            get { return GetLegacySocketOption(SocketOption.RATE, GetSocketOptionInt64); }
+            get { return GetLegacySocketOption<long>(SocketOption.RATE, GetSocketOptionInt64); }
             set { SetLegacySocketOption(SocketOption.RATE, value, (long)value, SetSocketOption); }
         }
 
@@ -145,7 +148,7 @@
         /// <exception cref="ObjectDisposedException">The <see cref="ZmqSocket"/> has been closed.</exception>
         public TimeSpan MulticastRecoveryInterval
         {
-            get { return TimeSpan.FromMilliseconds(GetLegacySocketOption(SocketOption.RECOVERY_IVL, GetSocketOptionInt64)); }
+            get { return TimeSpan.FromMilliseconds(GetLegacySocketOption<long>(SocketOption.RECOVERY_IVL, GetSocketOptionInt64)); }
             set { SetLegacySocketOption(SocketOption.RECOVERY_IVL, (int)value.TotalMilliseconds, (long)value.TotalMilliseconds, SetSocketOption); }
         }
 
@@ -156,7 +159,7 @@
         /// <exception cref="ObjectDisposedException">The <see cref="ZmqSocket"/> has been closed.</exception>
         public int ReceiveBufferSize
         {
-            get { return GetLegacySocketOption(SocketOption.RCVBUF, GetSocketOptionUInt64); }
+            get { return GetLegacySocketOption<ulong>(SocketOption.RCVBUF, GetSocketOptionUInt64); }
             set { SetLegacySocketOption(SocketOption.RCVBUF, value, (ulong)value, SetSocketOption); }
         }
 
@@ -168,7 +171,7 @@
         /// <remarks>If using 0MQ 2.x, will use the (deprecated) HWM socket option instead.</remarks>
         public int ReceiveHighWatermark
         {
-            get { return GetLegacySocketOption(ReceiveHwmOpt, GetSocketOptionUInt64); }
+            get { return GetLegacySocketOption<ulong>(ReceiveHwmOpt, GetSocketOptionUInt64); }
             set { SetLegacySocketOption(ReceiveHwmOpt, value, (ulong)value, SetSocketOption); }
         }
 
@@ -179,7 +182,7 @@
         /// <exception cref="ObjectDisposedException">The <see cref="ZmqSocket"/> has been closed.</exception>
         public bool ReceiveMore
         {
-            get { return GetLegacySocketOption(SocketOption.RCVMORE, GetSocketOptionInt64) == 1; }
+            get { return GetLegacySocketOption<long>(SocketOption.RCVMORE, GetSocketOptionInt64) == 1; }
         }
 
         /// <summary>
@@ -223,7 +226,7 @@
         /// <exception cref="ObjectDisposedException">The <see cref="ZmqSocket"/> has been closed.</exception>
         public int SendBufferSize
         {
-            get { return GetLegacySocketOption(SocketOption.SNDBUF, GetSocketOptionUInt64); }
+            get { return GetLegacySocketOption<ulong>(SocketOption.SNDBUF, GetSocketOptionUInt64); }
             set { SetLegacySocketOption(SocketOption.SNDBUF, value, (ulong)value, SetSocketOption); }
         }
 
@@ -235,7 +238,7 @@
         /// <remarks>If using 0MQ 2.x, will use the (deprecated) HWM socket option instead.</remarks>
         public int SendHighWatermark
         {
-            get { return GetLegacySocketOption(SendHwmOpt, GetSocketOptionUInt64); }
+            get { return GetLegacySocketOption<ulong>(SendHwmOpt, GetSocketOptionUInt64); }
             set { SetLegacySocketOption(SendHwmOpt, value, (ulong)value, SetSocketOption); }
         }
 
@@ -291,7 +294,12 @@
         /// <remarks>Not supported in 0MQ version 2.</remarks>
         public string LastEndpoint
         {
-            get { return ZmqVersion.OnlyIfAtLeast(LatestVersion, () => GetSocketOptionString(SocketOption.LAST_ENDPOINT)); }
+            get {
+                string lastEndPointUnicode = ZmqVersion.OnlyIfAtLeast(LatestVersion, () => GetSocketOptionString(SocketOption.LAST_ENDPOINT));
+                byte[] temp = Encoding.Unicode.GetBytes(lastEndPointUnicode);
+                // Encoding.ASCII.GetString(datablock1Buff, 0, MAX_STRING).Replace('\0', ' ').Trim()
+                return Encoding.ASCII.GetString(temp, 0, temp.Length).Replace('\0', ' ').Trim();
+            }
         }
 
         /// <summary>
@@ -431,7 +439,7 @@
             // if endpoint contains an address that was not previously bound.
             if (rc == -1 && !ErrorProxy.ShouldTryAgain)
             {
-                HandleProxyResult(rc);
+                //HandleProxyResult(rc);
             }
         }
 
@@ -455,8 +463,8 @@
             {
                 throw new ArgumentException("Unable to Connect to an empty endpoint.", "endpoint");
             }
-
-            HandleProxyResult(_socketProxy.Connect(endpoint));
+            int result = _socketProxy.Connect(endpoint);
+            HandleProxyResult(result);
         }
 
         /// <summary>
@@ -486,7 +494,7 @@
             // if endpoint contains an address that was not previously connected.
             if (rc == -1 && !ErrorProxy.ShouldTryAgain)
             {
-                HandleProxyResult(rc);
+                //HandleProxyResult(rc);
             }
         }
 
@@ -550,7 +558,8 @@
         {
             return timeout == TimeSpan.MaxValue
                        ? Receive(buffer)
-                       : this.WithTimeout(Receive, buffer, SocketFlags.DontWait, timeout);
+                       : ExecuteWithTimeout(() => Receive(buffer, SocketFlags.DontWait), timeout);
+
         }
 
         /// <summary>
@@ -647,9 +656,9 @@
                 return Receive(buffer, out size);
             }
 
-            int receivedBytes;
-            byte[] message = this.WithTimeout(Receive, buffer, SocketFlags.DontWait, out receivedBytes, timeout);
-
+            int receivedBytes = -1;
+            //byte[] message = this.WithTimeout<byte[],int,byte[]>(Receive, buffer, SocketFlags.DontWait, out receivedBytes, timeout);
+            byte[] message = ExecuteWithTimeout(() => Receive(buffer, SocketFlags.DontWait, out receivedBytes), timeout);
             size = receivedBytes;
 
             return message;
@@ -780,9 +789,9 @@
         /// <exception cref="NotSupportedException">The current socket type does not support Send operations.</exception>
         public int Send(byte[] buffer, int size, SocketFlags flags, TimeSpan timeout)
         {
-            return timeout == TimeSpan.MaxValue
-                    ? Send(buffer, size, flags & ~SocketFlags.DontWait)
-                    : this.WithTimeout(Send, buffer, size, flags | SocketFlags.DontWait, timeout);
+            return timeout == TimeSpan.MaxValue ?
+                     Send(buffer, size, flags & ~SocketFlags.DontWait)
+                        : ExecuteWithTimeout(() => Send(buffer, size, flags | SocketFlags.DontWait), timeout);
         }
 
         /// <summary>
@@ -915,7 +924,7 @@
             // ZmqContext was terminated during a socket method.
             if (result == -1 && !ErrorProxy.ContextWasTerminated)
             {
-                throw new ZmqSocketException(ErrorProxy.GetLastError());
+                //throw new ZmqSocketException(ErrorProxy.GetLastError() );
             }
         }
 
@@ -1016,12 +1025,12 @@
 
         internal void InvokePollEvents(PollEvents readyEvents)
         {
-            if (readyEvents.HasFlag(PollEvents.PollIn))
+            if ((readyEvents&PollEvents.PollIn)>0)
             {
                 InvokeReceiveReady(readyEvents);
             }
 
-            if (readyEvents.HasFlag(PollEvents.PollOut))
+            if ((readyEvents&PollEvents.PollOut)>0)
             {
                 InvokeSendReady(readyEvents);
             }
@@ -1102,6 +1111,37 @@
             {
                 throw new ObjectDisposedException(GetType().FullName);
             }
+        }
+
+        private TResult ExecuteWithTimeout<TResult>(Func<TResult> method, TimeSpan timeout)
+        {
+            if ((int)timeout.TotalMilliseconds < 1)
+            {
+                return method();
+            }
+
+            TResult receiveResult;
+
+            var timer = Stopwatch.StartNew();
+            timer.Start();
+            
+           // var spin = new SpinWait();
+
+            do
+            {
+                receiveResult = method();
+
+                if (ReceiveStatus != ReceiveStatus.TryAgain)
+                {
+                    break;
+                }
+
+                //spin.SpinOnce();
+                Thread.Sleep(1);
+            }
+            while (timer.ElapsedMilliseconds <= timeout.TotalMilliseconds);
+
+            return receiveResult;
         }
     }
 }
