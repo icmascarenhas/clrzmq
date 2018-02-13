@@ -1,0 +1,212 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="3.5">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>9.0.30729</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{CA957164-E527-44B6-B481-C6A76E140120}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>ZeroMQCE</RootNamespace>
+    <AssemblyName>ZeroMQCE</AssemblyName>
+    <ProjectTypeGuids>{4D628B5B-2FBC-4AA6-8C16-197242AEB884};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <PlatformFamilyName>WindowsCE</PlatformFamilyName>
+    <PlatformID>E2BECB1F-8C8C-41ba-B736-9BE7D946A398</PlatformID>
+    <OSVersion>5.0</OSVersion>
+    <DeployDirSuffix>ZeroMQCE</DeployDirSuffix>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <NativePlatformName>Windows CE</NativePlatformName>
+    <FormFactorID>
+    </FormFactorID>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE;$(PlatformFamilyName)</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <FileAlignment>512</FileAlignment>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;$(PlatformFamilyName)</DefineConstants>
+    <NoStdLib>true</NoStdLib>
+    <NoConfig>true</NoConfig>
+    <ErrorReport>prompt</ErrorReport>
+    <FileAlignment>512</FileAlignment>
+    <WarningLevel>4</WarningLevel>
+    <GenerateSerializationAssemblies>Off</GenerateSerializationAssemblies>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\ZeroMQ\ContextOption.cs" />
+    <Compile Include="..\ZeroMQ\Devices\Device.cs">
+      <Link>Devices\Device.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Devices\DeviceMode.cs">
+      <Link>Devices\DeviceMode.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Devices\DeviceRunner.cs">
+      <Link>Devices\DeviceRunner.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Devices\DeviceSocketSetup.cs">
+      <Link>Devices\DeviceSocketSetup.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Devices\ForwarderDevice.cs">
+      <Link>Devices\ForwarderDevice.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Devices\IDevice.cs">
+      <Link>Devices\IDevice.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Devices\QueueDevice.cs">
+      <Link>Devices\QueueDevice.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Devices\StreamerDevice.cs">
+      <Link>Devices\StreamerDevice.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Devices\ThreadedDeviceRunner.cs">
+      <Link>Devices\ThreadedDeviceRunner.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Devices\ZmqDeviceException.cs">
+      <Link>Devices\ZmqDeviceException.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\DuplexSocket.cs" />
+    <Compile Include="..\ZeroMQ\ExecuteExtensions.cs" />
+    <Compile Include="..\ZeroMQ\Interop\ContextProxy.cs">
+      <Link>Interop\ContextProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\DisposableIntPtr.cs">
+      <Link>Interop\DisposableIntPtr.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\ErrorDetails.cs">
+      <Link>Interop\ErrorDetails.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\ErrorProxy.cs">
+      <Link>Interop\ErrorProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\LibZmq.Mono.cs">
+      <Link>Interop\LibZmq.Mono.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\LibZmq.NET.cs">
+      <Link>Interop\LibZmq.NET.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\ManifestResource.cs">
+      <Link>Interop\ManifestResource.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\MonitorEventData.cs">
+      <Link>Interop\MonitorEventData.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\Platform.Mono.cs">
+      <Link>Interop\Platform.Mono.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\Platform.NET.cs">
+      <Link>Interop\Platform.NET.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\Platform.Unix.cs">
+      <Link>Interop\Platform.Unix.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\Platform.Windows.cs">
+      <Link>Interop\Platform.Windows.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\PollerProxy.cs">
+      <Link>Interop\PollerProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\PollEvents.cs">
+      <Link>Interop\PollEvents.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\PollItem.cs">
+      <Link>Interop\PollItem.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\Retry.cs">
+      <Link>Interop\Retry.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\SafeLibraryHandle.cs">
+      <Link>Interop\SafeLibraryHandle.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\SocketProxy.cs">
+      <Link>Interop\SocketProxy.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Interop\ZmqMsgT.cs">
+      <Link>Interop\ZmqMsgT.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Monitoring\MonitorContextExtensions.cs">
+      <Link>Monitoring\MonitorContextExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Monitoring\MonitorEvents.cs">
+      <Link>Monitoring\MonitorEvents.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Monitoring\MonitorSocketExtensions.cs">
+      <Link>Monitoring\MonitorSocketExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Monitoring\ZmqMonitor.cs">
+      <Link>Monitoring\ZmqMonitor.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Monitoring\ZmqMonitorErrorEventArgs.cs">
+      <Link>Monitoring\ZmqMonitorErrorEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Monitoring\ZmqMonitorEventArgs.cs">
+      <Link>Monitoring\ZmqMonitorEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Monitoring\ZmqMonitorFileDescriptorEventArgs.cs">
+      <Link>Monitoring\ZmqMonitorFileDescriptorEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\Monitoring\ZmqMonitorIntervalEventArgs.cs">
+      <Link>Monitoring\ZmqMonitorIntervalEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\ZeroMQ\RouterBehavior.cs" />
+    <Compile Include="..\ZeroMQ\TcpKeepaliveBehaviour.cs" />
+    <Compile Include="..\ZeroMQ\ZmqMessage.cs" />
+    <Compile Include="..\ZeroMQ\Poller.cs" />
+    <Compile Include="..\ZeroMQ\SendReceiveExtensions.cs" />
+    <Compile Include="..\ZeroMQ\SocketEventArgs.cs" />
+    <Compile Include="..\ZeroMQ\SubscribeExtSocket.cs" />
+    <Compile Include="..\ZeroMQ\SubscribeSocket.cs" />
+    <Compile Include="..\ZeroMQ\Frame.cs" />
+    <Compile Include="..\ZeroMQ\ErrorCode.cs" />
+    <Compile Include="..\ZeroMQ\ReceiveSocket.cs" />
+    <Compile Include="..\ZeroMQ\SendSocket.cs" />
+    <Compile Include="..\ZeroMQ\SocketFlags.cs" />
+    <Compile Include="..\ZeroMQ\Properties\AssemblyInfo.cs" />
+    <Compile Include="..\ZeroMQ\ProtocolType.cs" />
+    <Compile Include="..\ZeroMQ\ReceiveStatus.cs" />
+    <Compile Include="..\ZeroMQ\SendStatus.cs" />
+    <Compile Include="..\ZeroMQ\SocketOption.cs" />
+    <Compile Include="..\ZeroMQ\SocketType.cs" />
+    <Compile Include="..\ZeroMQ\ZmqContext.cs" />
+    <Compile Include="..\ZeroMQ\ZmqException.cs" />
+    <Compile Include="..\ZeroMQ\ZmqSocket.cs" />
+    <Compile Include="..\ZeroMQ\ZmqSocketException.cs" />
+    <Compile Include="..\ZeroMQ\ZmqVersion.cs" />
+    <Compile Include="..\ZeroMQ\ZmqVersionException.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CompactFramework.CSharp.targets" />
+  <ProjectExtensions>
+    <VisualStudio>
+      <FlavorProperties GUID="{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}">
+        <HostingProcess disable="1" />
+      </FlavorProperties>
+    </VisualStudio>
+  </ProjectExtensions>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
