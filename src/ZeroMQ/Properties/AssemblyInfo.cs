@@ -5,3 +5,4 @@
 // associated with an assembly.
 [assembly: AssemblyTitle("clrzmq")]
 [assembly: AssemblyDescription("ZeroMQ .NET bindings")]
+[assembly: AssemblyVersion("0.0.0.0")]
